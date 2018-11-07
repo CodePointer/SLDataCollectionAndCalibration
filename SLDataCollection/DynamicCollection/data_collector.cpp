@@ -7,7 +7,7 @@ DataCollector::DataCollector() {
   this->res_view_ = NULL;
   this->visualize_flag_ = false;
   this->storage_flag_ = false;
-  this->max_frame_num_ = 0;
+  this->max_frame_num_ = 300;
 	return;
 }
 
@@ -36,7 +36,7 @@ bool DataCollector::Init(bool dynamic_flag) {
 	bool status = true;
 
 	// flags
-	max_frame_num_ = 600;
+	max_frame_num_ = 1000;
 	visualize_flag_ = true;
 	storage_flag_ = true;
   dynamic_flag_ = dynamic_flag;
@@ -52,15 +52,16 @@ bool DataCollector::Init(bool dynamic_flag) {
 	vphase_name_ = "vPhase";
 	hphase_name_ = "hPhase";
 	phase_suffix_ = ".png";
-	dyna_name_ = "pattern_T36SD";
+	dyna_name_ = "pattern_D_3pix";
 	dyna_suffix_ = ".png";
   empty_name_ = "empty";
   empty_suffix_ = ".png";
-	wait_name_ = "pattern_T36SD";
+	wait_name_ = "pattern_D_3pix";
+  //wait_name_ = "vPhase";
 	wait_suffix_ = ".png";
 
 	// storage paths
-	save_data_path_ = "E:/SLDataSet/20180626/";
+	save_data_path_ = "E:/SLDataSet/20181105/";
 	dyna_frame_path_ = "dyna/";
 	dyna_frame_name_ = "dyna_mat";
 	dyna_frame_suffix_ = ".png";
@@ -96,9 +97,9 @@ bool DataCollector::Init(bool dynamic_flag) {
       this->cam_mats_[cam_idx].x_pro = new cv::Mat[1];
       this->cam_mats_[cam_idx].y_pro = new cv::Mat[1];
     } else {
-      this->cam_mats_[cam_idx].dyna = new Mat[this->max_frame_num_];
-      this->cam_mats_[cam_idx].x_pro = new Mat[this->max_frame_num_];
-      this->cam_mats_[cam_idx].y_pro = new Mat[this->max_frame_num_];
+      this->cam_mats_[cam_idx].dyna = new cv::Mat[this->max_frame_num_];
+      this->cam_mats_[cam_idx].x_pro = new cv::Mat[this->max_frame_num_];
+      this->cam_mats_[cam_idx].y_pro = new cv::Mat[this->max_frame_num_];
     }
   }
 	this->cam_view_ = new VisualModule("Camera");

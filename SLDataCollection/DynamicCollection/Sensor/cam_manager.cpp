@@ -63,6 +63,7 @@ cv::Mat* CamManager::CollectMultiColorFrame(int frame_num) {
     tmp_mat.copyTo(multi_result[k]);
     raw_img->Release();
     k++;
+    //std::cout << k << std::endl;
   }
   ptr_cam->EndAcquisition();
   return multi_result;
@@ -116,7 +117,7 @@ bool CamManager::ShowCollectionResult(VisualModule * window, int stop_key) {
     }
     Spinnaker::ImagePtr converted_img = raw_img->Convert(Spinnaker::PixelFormat_BGR8);
     cv::Mat tmp_mat(kCamHeight, kCamWidth, CV_8UC3, converted_img->GetData());
-    int key = window->Show(tmp_mat, 10, false, 1.0);
+    int key = window->Show(tmp_mat, 2, false, 1.0);
     raw_img->Release();
     if (key == stop_key) {
       break;

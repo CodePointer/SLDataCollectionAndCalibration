@@ -11,14 +11,36 @@ center_intensity = [0, 42, 91, 127, 170, 230];
 % Get mask
 hsv_img = rgb2hsv(img);
 raw_mask = imbinarize(hsv_img(:, :, 2), 0.1);
-se = strel('disk',3);
+% se = strel('disk',3);
+se = strel('rectangle', [3, 9]);
 raw_mask_dil = imdilate(raw_mask, se);
 mask_final = imerode(raw_mask_dil, se);
 
+% Flood fill
+mask_final = ~mask_final;
+mask_checked = mask_final;
+thred = 200;
+% figure(1), imshow(mask_final);
+for h = 1:1024
+  for w = 1:1280
+    if mask_checked(h, w) == 0
+%       figure(1), imshow([mask_checked; mask_final]);
+      [mask_fill, loc_vec] = imfill(mask_checked, [h, w], 4);
+      % Check if region is too small
+      if sum(sum(xor(mask_fill, mask_checked))) <= thred
+        mask_final = imfill(mask_final, [h, w], 4);
+      end
+      mask_checked = mask_fill;
+    end
+  end
+end
+mask_final = ~mask_final;
+% figure(2), imshow(mask_final);
+
 % Hand-make delete:
-mask_final(1:200, :) = 0;
-mask_final(:, 1:600) = 0;
-mask_final(870:end, :) = 0;
+% mask_final(1:200, :) = 0;
+% mask_final(:, 1:600) = 0;
+% mask_final(870:end, :) = 0;
 
 class_info = hsv_img(:, :, 1) * 255;
 class_mask = zeros(1024, 1280);
