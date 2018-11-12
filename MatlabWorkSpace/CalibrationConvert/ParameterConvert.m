@@ -3,6 +3,7 @@
 % Which means the klab use the left-handed coordinates order.
 % So just inverse the X coord in the processing.
 
+clear;
 main_path = 'E:/SLDataSet/20181105/calib1105/';
 main_para_path = [main_path, ''];
 
@@ -39,7 +40,7 @@ trans_vec(1) = -trans_vec(1);% Inverse of X
 % rot_Z = [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
 rad_para = deg2rad(epi_para_data(4:6));
 rad_para(1) = -rad_para(1);% Inverse of X
-rot_mat = eul2rotm(deg2rad(epi_para_data(4:6)));
+rot_mat = eul2rotm(rad_para);
 
 % save([main_path, 'cam_mat0.txt'], 'cam_mat');
 % save([main_path, 'pro_mat0.txt'], 'pro_mat');

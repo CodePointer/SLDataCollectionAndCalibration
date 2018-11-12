@@ -1,0 +1,43 @@
+% Some parameters
+main_path = 'E:/SLDataSet/20181112/';
+cam_mat = load([main_path, 'cam_mat0.txt']);
+pro_mat = load([main_path, 'pro_mat0.txt']);
+r_mat = load([main_path, 'R0.txt']);
+t_vec = load([main_path, 'T0.txt']);
+color_set = load([main_path, 'ColorSet.txt']);
+de_seq = load([main_path, 'DeBruijnSeq.txt']);
+CAM_HEIGHT = 1024;
+CAM_WIDTH = 1280;
+
+% Set parameters
+total_frame_num = 1000;
+output_folder = 'DataSet1';
+start_eular_angle = [0, 0, 0];
+end_eular_angle = [0, 180.0, 0];
+start_trans_vec = [0; 0; 10.0];
+end_trans_vec = [0; 0; 10.0];
+
+% Get point cloud
+model_name = 'bun_zipper.ply';
+point_cloud = GetPointCloudFromPlyFile([main_path, model_name]);
+point_cloud = point_cloud * 10;
+
+% Make
+mkdir([main_path, output_folder]);
+for i = 0:total_frame_num - 1
+  % Create depth_mat
+  depth_mat = ones(CAM_HEIGHT, CAM_WIDTH) * 3000;
+  eular_angle = start_eular_angle ...
+    + (i / total_frame_num - 1) * (end_eular_angle - start_eular_angle);
+  trans_vec = start_trans_vec ...
+    + (i / total_frame_num - 1) * (end_trans_vec - start_trans_vec);
+  rad_para = deg2rad(eular_angle);
+  rot_mat = eul2rotm(rad_para);
+  bunny2cam_mat = [rot_mat, trans_vec; [0, 0, 0, 1]];
+  % Project to cam_image
+  point_size = size(point_cloud, 1);
+  for p_idx = 1:point_size
+    cam_3d_point = bunny2cam_mat * [point_cloud(p_idx, :)'; 1];
+    cam_2d_point = [cam_mat, zero
+  end
+end
