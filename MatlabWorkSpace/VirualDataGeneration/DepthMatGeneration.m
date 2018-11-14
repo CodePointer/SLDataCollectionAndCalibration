@@ -1,9 +1,9 @@
 % Create depth_mat
 depth_mat = ones(CAM_HEIGHT, CAM_WIDTH) * 3000;
 eular_angle = start_eular_angle ...
-  + (i / total_frame_num - 1) * (end_eular_angle - start_eular_angle);
+  + (i / (total_frame_num - 1)) * (end_eular_angle - start_eular_angle);
 trans_vec = start_trans_vec ...
-  + (i / total_frame_num - 1) * (end_trans_vec - start_trans_vec);
+  + (i / (total_frame_num - 1)) * (end_trans_vec - start_trans_vec);
 rad_para = deg2rad(eular_angle);
 rot_mat = eul2rotm(rad_para);
 bunny2cam_mat = [rot_mat, trans_vec; [0, 0, 0, 1]];

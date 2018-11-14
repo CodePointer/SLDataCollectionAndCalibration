@@ -16,10 +16,10 @@ warning('off');
 
 % Set parameters
 total_frame_num = 1000;
-output_folder = 'DataSet1';
-start_eular_angle = [180, 0, 0];
+output_folder = 'DataSet3';
+start_eular_angle = [180, 0, 45];
 end_eular_angle = [180, 360.0, 0];
-start_trans_vec = [-0.1; 0.25; 1.0];
+start_trans_vec = [-0.1; 0.15; 1.0];
 end_trans_vec = [-0.1; 0.25; 1.0];
 
 % Get point cloud
@@ -28,7 +28,7 @@ model_name = 'bun_zipper_res3.ply';
 point_cloud = point_cloud * 2;
 
 % Make
-% mkdir([main_path, output_folder]);
+mkdir([main_path, output_folder]);
 for i = 0:total_frame_num - 1
   % Depth mat
   DepthMatGeneration;
@@ -40,11 +40,12 @@ for i = 0:total_frame_num - 1
 
   % image mat
   ImageMatGeneration;
-  figure(3), imshow(image_mat);
+  figure(3), imshow(image_mat), title(['Image: (', num2str(i), ')']);
   fprintf('Frame(%d) generation finished.\n', i);
   
 %   WriteDepthMat2File([main_path, output_folder, '/', 'depth', num2str(i), '.txt'], depth_mat);
   WriteDepthMat2File([main_path, output_folder, '/', 'x_pro', num2str(i), '.txt'], x_pro_mat);
   imwrite(image_mat, [main_path, output_folder, '/', 'cam_img', num2str(i), '.png']);
+  pause(0.1);
   fprintf('Frame(%d) writing finished.\n', i);
 end
