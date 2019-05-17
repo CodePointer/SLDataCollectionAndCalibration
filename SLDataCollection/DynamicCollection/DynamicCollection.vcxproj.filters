@@ -27,16 +27,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sensor\cam_manager.cpp">
-      <Filter>Sensor\Cam</Filter>
-    </ClCompile>
-    <ClCompile Include="Sensor\pro_manager.cpp">
-      <Filter>Sensor\Pro</Filter>
-    </ClCompile>
-    <ClCompile Include="Support\storage_mod.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Support\visual_mod.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="data_collector.cpp">
@@ -45,56 +36,66 @@
     <ClCompile Include="global_fun.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="static_para.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Decoder\gray_decoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Decoder\phase_decoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sensor\cam_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensor\pro_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Sensor\sensor_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Support\storage_mod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Support\visual_mod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Sensor\cam_manager.h">
-      <Filter>Sensor\Cam</Filter>
-    </ClInclude>
-    <ClInclude Include="Sensor\pro_manager.h">
-      <Filter>Sensor\Pro</Filter>
-    </ClInclude>
-    <ClInclude Include="Support\visual_mod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Support\storage_mod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="data_collector.h">
+    <ClInclude Include="static_para.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="global_fun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="static_para.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Decoder\gray_decoder.h">
+    <ClInclude Include="data_collector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Decoder\phase_decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Decoder\gray_decoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensor\cam_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensor\pro_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Sensor\sensor_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Support\storage_mod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Support\visual_mod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config_reader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="opencv_world341.dll" />
     <None Include="opencv_world341d.dll" />
+    <None Include="path.ini" />
   </ItemGroup>
 </Project>

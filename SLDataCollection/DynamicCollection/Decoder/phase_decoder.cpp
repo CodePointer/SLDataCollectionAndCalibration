@@ -52,7 +52,7 @@ bool PhaseDecoder::CountResult() {
 			float greyValue3 = grey_mats_[3].at<uchar>(h, w);
 			float sinValue = (greyValue0 - greyValue2) / 2;
 			float cosValue = (greyValue1 - greyValue3) / 2;
-			float x = cvFastArctan(sinValue, cosValue);
+			float x = cv::fastAtan2(sinValue, cosValue);
 			float pix = (x) / (360)*(float)(pix_period_);
 			pix += 0.5;
 			if (pix > pix_period_)

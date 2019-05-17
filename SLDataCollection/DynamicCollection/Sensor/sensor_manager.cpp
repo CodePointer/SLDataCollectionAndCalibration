@@ -68,9 +68,9 @@ bool SensorManager::LoadPatterns(int pattern_num, std::string file_path,
 		UnloadPatterns();
 	}
 	// Set input parameters
-	this->pattern_num_ = pattern_num;
-	this->now_num_ = 0;
-	this->pattern_mats_ = new cv::Mat[this->pattern_num_];
+	pattern_num_ = pattern_num;
+	now_num_ = 0;
+	pattern_mats_ = new cv::Mat[pattern_num_];
 	// Load patterns
 	for (int i = 0; i < this->pattern_num_; i++) {
     std::string idx2Str;
@@ -80,7 +80,7 @@ bool SensorManager::LoadPatterns(int pattern_num, std::string file_path,
     
     cv::Mat tmp_mat;
     std::string read_path = file_path + file_name + idx2Str + file_suffix;
-    tmp_mat = cv::imread(read_path, CV_LOAD_IMAGE_COLOR);
+    tmp_mat = cv::imread(read_path, cv::IMREAD_UNCHANGED);
     tmp_mat.copyTo(this->pattern_mats_[i]);
 
 		if (tmp_mat.empty()) {
@@ -91,10 +91,8 @@ bool SensorManager::LoadPatterns(int pattern_num, std::string file_path,
 }
 
 // Release patterns
-bool SensorManager::UnloadPatterns()
-{
-	if (this->pattern_mats_ != NULL)
-	{
+bool SensorManager::UnloadPatterns() {
+	if (this->pattern_mats_ != NULL) {
 		delete[]this->pattern_mats_;
 		this->pattern_mats_ = NULL;
 	}
@@ -120,11 +118,11 @@ bool SensorManager::SetProPicture(int pat_idx) {
 
 // 获取相机图像
 cv::Mat* SensorManager::GetCamColorFrames(int frame_num) {
-  return cam_device_->CollectMultiColorFrame(frame_num);
+  return cam_device_->CollectMultiFrame(frame_num);
 }
 
 cv::Mat* SensorManager::GetCamMonoFrames(int frame_num) {
-  return cam_device_->CollectMultiMonoFrame(frame_num);
+  return cam_device_->CollectMultiFrame(frame_num);
 }
 
 bool SensorManager::ShowCaptureResult(VisualModule* window, int stop_key) {

@@ -1,3 +1,13 @@
+// ================================================================= //
+// @File: data_collector.h data_collector.cpp
+// @Author: Qiao Rukun
+// @Date: 2019.05.16
+// @LastEditTime: 2019.05.17
+// @LastEditors: Qiao Rukun
+// ================================================================= //
+
+// @brief ref to data_collector.h.
+
 #include "data_collector.h"
 
 DataCollector::DataCollector() {
@@ -52,16 +62,16 @@ bool DataCollector::Init(bool dynamic_flag) {
 	vphase_name_ = "vPhase";
 	hphase_name_ = "hPhase";
 	phase_suffix_ = ".png";
-	dyna_name_ = "pattern_D_3pix";
+	dyna_name_ = "4pix_pattern";
 	dyna_suffix_ = ".png";
   empty_name_ = "empty";
   empty_suffix_ = ".png";
-	wait_name_ = "pattern_D_3pix";
+	wait_name_ = "4pix_pattern";
   //wait_name_ = "vPhase";
 	wait_suffix_ = ".png";
 
 	// storage paths
-	save_data_path_ = "E:/SLDataSet/20181105/";
+	save_data_path_ = "E:/SLDataSet/20190516/";
 	dyna_frame_path_ = "dyna/";
 	dyna_frame_name_ = "dyna_mat";
 	dyna_frame_suffix_ = ".png";
@@ -201,9 +211,20 @@ bool DataCollector::CollectStatData() {
   return status;
 }
 
+// The function for system calibration.
+// 
+// Use chessboard for collecting. When collecting calibration result, make sure
+// fill the chessboard width & height correctly. Place the board only to make sure
+// all the correspondence points found are in the same plane.
+// 
+// Usage:
+//    1. Place chessboard and press [space].
+//    2. When finished the calibration result, check the reprojected chessboard corner.
+//    3. Press y if success, other key for failed.
 bool DataCollector::CalibrateSystem() {
   bool status = true;
 
+  // Step 0: Create point sets, fill the obj points.
   printf("Begin collection.\n");
   StorageModule storage;
   std::vector<std::vector<cv::Point2f>>().swap(cam_points_);
@@ -212,19 +233,19 @@ bool DataCollector::CalibrateSystem() {
   std::vector<cv::Point3f>().swap(tmp_obj_points_);
   for (int x = 0; x < kChessWidth; x++) {
     for (int y = 0; y < kChessHeight; y++) {
-      tmp_obj_points_.push_back(cv::Point3f(x, y, 0));
+      tmp_obj_points_.push_back(cv::Point3f(x * kChessSquareLen, y * kChessSquareLen, 0));
     }
   }
 
   // For each frames:
   int valid_num = 0;
-  int total_frames = 10;
-
-  GetInputSignal();
+  int total_frames = kChessFrameNumber;
 
   for (int frm_idx = 0; frm_idx < max_frame_num_; frm_idx++) {
     // 0. Wait for signal.
     // Adjust object position.
+    GetInputSignal();
+    status = true;
     if (status) {
       printf("Detecting boards[valid=%d]...", valid_num);
       status = DetectChessBoard();
@@ -236,19 +257,21 @@ bool DataCollector::CalibrateSystem() {
     // Use gray_code and phase shifting
     if (status) {
       printf("Collecting [%d] static images...", frm_idx);
-      status = CollectStaticFrame(frm_idx);
+      status = CollectStaticFrame(0);
       printf("finished.\n");
     }
     if (status) {
       printf("Decoding [%d] static images...", frm_idx);
-      status = DecodeSingleFrame(frm_idx);
+      status = DecodeSingleFrame(0);
       printf("finished.\n");
     }
+
+    // 2. Estimation homography projection.
 
     // 2. Fill ChessBoards from collected data
     if (status) {
       printf("Filling chess boards [%d]...", frm_idx);
-      status = FillChessBoard(frm_idx);
+      status = FillChessBoard(0);
       printf("finished.\n");
     }
 
@@ -302,44 +325,51 @@ bool DataCollector::DetectChessBoard() {
   bool status = true;
   int kMultiCapture = 1;
   std::vector<cv::Point2f>().swap(tmp_cam_points_);
-  if (status) {
-    status = sensor_manager_->LoadPatterns(1, pattern_path_, 
-        empty_name_, empty_suffix_);
-  }
+
+  status = sensor_manager_->LoadPatterns(1, pattern_path_, 
+    empty_name_, empty_suffix_);
   if (status) {
     status = sensor_manager_->SetProPicture(0);
   }
 
   // Capture image and check
   if (status) {
-    while (true) {
-      cv::Mat captured = GetRobustCameraFrame(kMultiCapture);
-      cam_view_->Show(captured, 10, false, 0.5);
-      int max_attempt_times = 2;
-      int k = 0;
-      while (k < max_attempt_times) {
-        int found = cv::findChessboardCorners(captured,
-          cv::Size(kChessHeight, kChessWidth),
-          tmp_cam_points_,
-          cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE);
+    cv::Mat captured = GetRobustCameraFrame(kMultiCapture);
+    captured.copyTo(cam_image_);
+    cam_view_->Show(captured, 10, false, 0.5);
+    int max_attempt_times = 2;
+    int k = 0;
+    while (k < max_attempt_times) {
+      int found = findChessboardCornersSB(
+        captured, cv::Size(kChessHeight, kChessWidth), tmp_cam_points_,
+        CALIB_CB_EXHAUSTIVE | CALIB_CB_NORMALIZE_IMAGE);
+      /*int found = cv::findChessboardCorners(captured,
+        cv::Size(kChessHeight, kChessWidth),
+        tmp_cam_points_,
+        cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE);*/
+      if (found) {
+        cv::cornerSubPix(captured, tmp_cam_points_, cv::Size(5, 5), cv::Size(-1, -1),
+          cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 30, 0.1));
         cv::drawChessboardCorners(captured, cv::Size(kChessHeight, kChessWidth),
           tmp_cam_points_, found);
         res_view_->Show(captured, 10, false, 0.5);
-        if (found) {
-          break;
-        }
-        k++;
-      }
-      if (k < max_attempt_times) {
-        cv::cornerSubPix(captured, tmp_cam_points_, cv::Size(5, 5), cv::Size(-1, -1),
-          cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 30, 0.1));
         break;
       }
+      /*if (found) {
+        break;
+      }*/
+      k++;
     }
+    if (k >= max_attempt_times)
+      status = false;
+    /*if (k < max_attempt_times) {
+      cv::cornerSubPix(captured, tmp_cam_points_, cv::Size(5, 5), cv::Size(-1, -1),
+        cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 30, 0.1));
+      break;
+    }*/
   }
-  if (status) {
-    this->sensor_manager_->UnloadPatterns();
-  }
+  
+  sensor_manager_->UnloadPatterns();
   return status;
 }
 
@@ -423,7 +453,7 @@ cv::Mat DataCollector::GetRobustCameraFrame(int multi_capture) {
   }
   temp_total_mat.convertTo(result, CV_8UC1);
   cam_view_->Show(result, 1, false, 1.0);
-  return result;
+  return result; 
 }
 
 // ---------------------------------
@@ -551,7 +581,7 @@ bool DataCollector::DecodeSingleFrame(int frameNum) {
       }
       /*this->res_view_->Show(ver_gray_mat, 0, true, 0.5);
       this->res_view_->Show(ver_phase_mat, 0, true, 0.5);*/
-      cam_mats_[cam_idx].x_pro[frameNum] = ver_gray_mat + ver_phase_mat;
+      cam_mats_[cam_idx].x_pro[0] = ver_gray_mat + ver_phase_mat;
     }
     if (status) {
       int hor_gray_num = 1 << kHorGrayNum;
@@ -583,7 +613,7 @@ bool DataCollector::DecodeSingleFrame(int frameNum) {
       }
       /*this->my_debug_->Show(tmp_gray_mat, 0, true, 0.5);
       this->my_debug_->Show(tmp_phase_mat, 0, true, 0.5);*/
-      cam_mats_[cam_idx].y_pro[frameNum] = hor_gray_mat + hor_phase_mat;
+      cam_mats_[cam_idx].y_pro[0] = hor_gray_mat + hor_phase_mat;
     }
   }
 	return status;
@@ -593,8 +623,54 @@ bool DataCollector::FillChessBoard(int frameNum) {
   bool status = true;
   std::vector<cv::Point2f>().swap(tmp_pro_points_);
 
-  // projector coord
+  // Find camera search area
   std::vector<cv::Point2f>::iterator i;
+  float h_cam_start = kCamHeight - 1;
+  float h_cam_end = 0;
+  float w_cam_start = kCamWidth - 1;
+  float w_cam_end = 0;
+  for (i = tmp_cam_points_.begin(); i != tmp_cam_points_.end(); ++i) {
+    h_cam_start = h_cam_start <= i->y ? h_cam_start : i->y;
+    h_cam_end = h_cam_end >= i->y ? h_cam_end : i->y;
+    w_cam_start = w_cam_start <= i->x ? w_cam_start : i->x;
+    w_cam_end = w_cam_end >= i->x ? w_cam_end : i->x;
+  }
+
+  // Estimate homography transformation
+  vector<Point2f> point_src, point_dst;
+  for (int h = (int)h_cam_start; h <= (int)h_cam_end; h++) {
+    for (int w = (int)w_cam_start; w <= (int)w_cam_end; w++) {
+      float x_pro_val = (float)cam_mats_[0].x_pro[frameNum].at<double>(h, w);
+      float y_pro_val = (float)cam_mats_[0].y_pro[frameNum].at<double>(h, w);
+      if (x_pro_val <= 0 || y_pro_val <= 0)
+        continue;
+      point_src.push_back(Point2f(w, h));
+      point_dst.push_back(Point2f(x_pro_val, y_pro_val));
+    }
+  }
+  Mat homo_trans = findHomography(point_src, point_dst);
+
+  // Transform projector coord to camera
+  // perspectiveTransform(tmp_cam_points_, tmp_pro_points_, homo_trans);
+
+  warpPerspective(cam_image_, pro_image_, homo_trans, Size(kProWidth, kProHeight));
+  int found = findChessboardCornersSB(
+    pro_image_, cv::Size(kChessHeight, kChessWidth), tmp_pro_points_,
+    CALIB_CB_EXHAUSTIVE | CALIB_CB_NORMALIZE_IMAGE);
+  /*int found = cv::findChessboardCorners(captured,
+  cv::Size(kChessHeight, kChessWidth),
+  tmp_cam_points_,
+  cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE);*/
+  
+  if (found) {
+    cv::cornerSubPix(pro_image_, tmp_pro_points_, cv::Size(5, 5), cv::Size(-1, -1),
+      cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 30, 0.1));
+  }
+  cv::drawChessboardCorners(pro_image_, cv::Size(kChessHeight, kChessWidth),
+    tmp_pro_points_, found);
+
+  // projector coord
+  /*std::vector<cv::Point2f>::iterator i;
   for (i = tmp_cam_points_.begin(); i != tmp_cam_points_.end(); ++i) {
     cv::Point2f cam_coord = *i;
     cv::Point2f pro_coord;
@@ -616,7 +692,7 @@ bool DataCollector::FillChessBoard(int frameNum) {
       }
     }
     tmp_pro_points_.push_back(pro_coord);
-  }
+  }*/
 
   return status;
 }
@@ -666,8 +742,9 @@ bool DataCollector::VisualizationForCalibration(int frame_idx) {
 
   cv::Mat draw_mat(kProHeight, kProWidth, CV_8UC1);
   draw_mat.setTo(0);
-  cv::drawChessboardCorners(draw_mat, cv::Size(kChessHeight, kChessWidth),
-      tmp_pro_points_, true);
+  draw_mat = pro_image_;
+  /*cv::drawChessboardCorners(draw_mat, cv::Size(kChessHeight, kChessWidth),
+      tmp_pro_points_, true);*/
   int key = res_view_->Show(draw_mat, 0, false, 0.5);
   if (key == 'y') {
     status = true;

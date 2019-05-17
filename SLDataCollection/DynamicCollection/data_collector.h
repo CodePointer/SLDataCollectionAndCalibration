@@ -1,9 +1,24 @@
+// ================================================================= //
+// @File: data_collector.h data_collector.cpp
+// @Author: Qiao Rukun
+// @Date: 2019.05.16
+// @LastEditTime: 2019.05.16
+// @LastEditors: Qiao Rukun
+// ================================================================= //
+
+// @brief the data_collector.h/cpp is a general class for data collection.
+// The file acquires images from a sensor, processes the raw data to required format.
+// In general, the class can finished static decoding(by graycode & phase shifting),
+// collect dynamic scene frames, and finish calibration part.
+// All need you need to do is creating a DataCollector and call functions.
+
 #ifndef _DATACOLLECTOR_H_
 #define _DATACOLLECTOR_H_
 
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <sstream>
+#include <vector>
 #include "static_para.h"
 #include "global_fun.h"
 #include "Sensor/sensor_manager.h"
@@ -12,8 +27,25 @@
 #include "Support/visual_mod.h"
 #include "Support/storage_mod.h"
 
-// Data collector for dynamic data collection.
-// Usage: Init£¬Collect£¬Close
+// The data collector of program. Finished all related operation about data collection.
+//
+// In general, the data collector is used for 3 types of data collection: calibration,
+// dynamic frames, static frames. The class can also decode the static frames and get the 
+// correspondence information from graycode & phaseshifting process.
+//
+// Example:
+//    DataCollector dc = DataCollector();
+//    status = dc.Init(dynamic_flag=true);
+//    ......
+//    status = dc.CollectDynamicData();
+//    or
+//    status = dc.CollectStatData();
+//    or
+//    status = dc.CalibrateSystem();
+//    ......
+//    dc.Close();
+// Tips:
+//    None.
 class DataCollector {
 private:
   // Sensor part
@@ -51,6 +83,8 @@ private:
 	VisualModule * cam_view_;
   VisualModule * res_view_;
   // Calibration parts
+  cv::Mat cam_image_;
+  cv::Mat pro_image_;
   std::vector<std::vector<cv::Point2f>> cam_points_;
   std::vector<cv::Point2f> tmp_cam_points_;
   std::vector<std::vector<cv::Point2f>> pro_points_;

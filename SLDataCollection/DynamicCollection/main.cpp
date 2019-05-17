@@ -1,4 +1,5 @@
 #include "data_collector.h"
+//#include <Spinnaker.h>
 int main()
 {
 	bool status = true;
@@ -8,8 +9,8 @@ int main()
 	}
 	if (status)	{
     //status = dc.CollectStatData();
-		status = dc.CollectDynaData();
-    //status = dc.CalibrateSystem();
+		// status = dc.CollectDynaData();
+    status = dc.CalibrateSystem();
 	}
 	if (status)	{
 		status = dc.Close();
